@@ -387,6 +387,20 @@ footer {
 .chart-wrap svg{display:block;width:100%;height:auto;min-width:0}
 @media(max-width:640px){.chart-wrap{overflow-x:auto;padding:8px}.chart-wrap svg{min-width:620px}}
 
+
+.report-header{text-align:center;border-top:6px solid var(--azul)}
+.report-kicker{text-transform:uppercase;letter-spacing:.5px;color:var(--verde);font-weight:700;font-size:12px;margin-bottom:10px}
+.report-header h1{color:var(--azul);font-size:25px;line-height:1.3;margin:0 auto 15px;max-width:950px}
+.report-header p{margin:7px 0;color:#53677A}
+.report-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+.report-grid>div{border:1px solid var(--borde);border-radius:10px;padding:16px;background:#FBFCFD}
+.report-grid strong{color:var(--azul)} .report-grid p{margin:8px 0 0;line-height:1.6}
+.report-textarea{width:100%;min-height:160px;padding:14px;border:1px solid var(--borde);border-radius:9px;resize:vertical;line-height:1.6;color:var(--texto);background:#FCFDFE}
+.report-textarea:focus{outline:none;border-color:var(--verde);box-shadow:0 0 0 3px rgba(42,157,143,.1)}
+.save-note{display:block;color:var(--gris);font-size:11px;margin-top:7px}.report-actions{justify-content:flex-end}
+@media(max-width:700px){.report-grid{grid-template-columns:1fr}.report-header h1{font-size:21px}}
+@media print{body{background:#fff;font-size:11px}header,footer,.tabs,.project-title,.no-print,#registrar,#analisis,#probabilidad{display:none!important}main{max-width:none;padding:0;margin:0}#informe{display:block!important}.card{box-shadow:none;border:0;border-radius:0;margin:0 0 14px;padding:12px 0;break-inside:avoid}.report-header{border-top:0;border-bottom:2px solid #1F3A5F;padding-bottom:12px}.report-header h1{font-size:20px}.report-grid{gap:8px}.report-grid>div{padding:9px}.chart-wrap{break-inside:avoid;border:1px solid #ddd}.chart-wrap svg{min-width:0}.report-textarea{border:1px solid #bbb;min-height:120px}table{min-width:0;font-size:9px}th,td{padding:5px 4px;white-space:normal}.section-heading{font-size:14px}}
+
 </style>
 </head>
 
@@ -821,15 +835,32 @@ footer {
   </section>
 
   <!-- INFORME -->
-
   <section id="informe" class="panel">
-    <div class="card construction">
-      <div class="icon">📑</div>
-      <h2>Informe estadístico</h2>
-      <p>Esta sección se encuentra en construcción.</p>
-      <p>Aquí se generarán los resultados, tablas, gráficos,
-      interpretaciones y conclusiones del estudio.</p>
+    <div id="contenidoInforme">
+      <div class="report-header card">
+        <div class="report-kicker">Proyecto de Aula · Estadística (840601) · UNIPAZ</div>
+        <h1>Análisis estadístico del consumo de agua en los dispensadores del edificio de aulas de UNIPAZ</h1>
+        <p><strong>Integrante:</strong> Omar Guerrero Avilés - Docente</p>
+        <p id="informePeriodo"><strong>Periodo de recolección:</strong> Sin registros</p>
+        <p id="informeN"><strong>Total de registros (n):</strong> 0</p>
+      </div>
+      <div class="card">
+        <h3 class="section-heading"><span class="section-number">01</span>Ficha técnica</h3>
+        <div class="report-grid">
+          <div><strong>Objetivo</strong><p>Analizar el consumo de agua de los dispensadores ubicados en los cuatro pisos del edificio de aulas de UNIPAZ, mediante el registro de los niveles de agua, la frecuencia de cambio de botellones y la estimación de usuarios, para describir su comportamiento e identificar patrones de consumo.</p></div>
+          <div><strong>Población</strong><p>Todos los dispensadores de agua ubicados en los cuatro pisos del edificio de aulas de UNIPAZ, durante el periodo de estudio.</p></div>
+          <div><strong>Tipo de muestreo</strong><p>Censal (se realiza un censo), porque se incluyen todos los dispensadores de la población y no se selecciona una muestra.</p></div>
+          <div><strong>Muestra (n)</strong><p id="informeMuestra">0 registros de observación.</p></div>
+        </div>
+      </div>
+      <div class="card"><h3 class="section-heading"><span class="section-number">02</span>Variables del estudio</h3><div id="informeVariables"></div></div>
+      <div class="card"><h3 class="section-heading"><span class="section-number">03</span>Resultados de todas las variables</h3><p class="method-note">Los resultados se generan automáticamente con todos los registros almacenados, sin aplicar el filtro de la pestaña «Análisis». Para variables cuantitativas se presentan medidas, distribución de frecuencias y gráficos; para variables cualitativas, distribución de frecuencias y gráfico de barras.</p></div>
+      <div id="resultadosInforme"></div>
+      <div class="card report-editor-card"><h3 class="section-heading"><span class="section-number">04</span>Interpretación</h3><textarea id="informeInterpretacion" class="report-textarea" placeholder="Escriba aquí la interpretación general de los resultados..."></textarea><small class="save-note">Se guarda automáticamente en este navegador.</small></div>
+      <div class="card report-editor-card"><h3 class="section-heading"><span class="section-number">05</span>Conclusiones</h3><textarea id="informeConclusiones" class="report-textarea" placeholder="Escriba aquí las conclusiones del estudio..."></textarea><small class="save-note">Se guarda automáticamente en este navegador.</small></div>
+      <div class="card report-editor-card"><h3 class="section-heading"><span class="section-number">06</span>Recomendaciones para la dependencia</h3><textarea id="informeRecomendaciones" class="report-textarea" placeholder="Escriba aquí las recomendaciones para la dependencia..."></textarea><small class="save-note">Se guarda automáticamente en este navegador.</small></div>
     </div>
+    <div class="actions no-print report-actions"><button class="btn btn-primary" type="button" onclick="imprimirInforme()">🖨 Imprimir / Guardar PDF</button><button class="btn btn-light" type="button" onclick="generarInforme()">↻ Actualizar informe</button></div>
   </section>
 
 </main>
@@ -1485,6 +1516,29 @@ function calcularContingencia() {
 }
 
 // ==========================================
+// 13. INFORME ESTADÍSTICO
+// ==========================================
+const INFORME_STORAGE = "estadiapp_unipaz_informe_textos_v1";
+function cargarTextosInforme(){try{const x=JSON.parse(localStorage.getItem(INFORME_STORAGE)||"{}");$("informeInterpretacion").value=x.interpretacion||"";$("informeConclusiones").value=x.conclusiones||"";$("informeRecomendaciones").value=x.recomendaciones||"";}catch(e){}}
+function guardarTextosInforme(){try{localStorage.setItem(INFORME_STORAGE,JSON.stringify({interpretacion:$("informeInterpretacion").value,conclusiones:$("informeConclusiones").value,recomendaciones:$("informeRecomendaciones").value}));}catch(e){}}
+function periodoInforme(){const f=registros.map(r=>r.fecha).filter(Boolean).sort();return f.length?`${f[0]} a ${f[f.length-1]}`:"Sin registros";}
+function tipoVariableInforme(k){return VARIABLES_CUANTITATIVAS[k]?"Cuantitativa": "Cualitativa";}
+function generarInforme(){
+  $("informePeriodo").innerHTML=`<strong>Periodo de recolección:</strong> ${escapar(periodoInforme())}`;
+  $("informeN").innerHTML=`<strong>Total de registros (n):</strong> ${registros.length}`;
+  $("informeMuestra").textContent=`${registros.length} registros de observación.`;
+  const vars=[...Object.entries(VARIABLES_CUANTITATIVAS),...Object.entries(VARIABLES_CUALITATIVAS)];
+  $("informeVariables").innerHTML=tablaHTML(["Variable","Tipo","Descripción"],vars.map(([k,n])=>[escapar(n),tipoVariableInforme(k),escapar(n)]));
+  if(!registros.length){$("resultadosInforme").innerHTML='<div class="card"><p class="empty">No hay registros para generar resultados.</p></div>';return;}
+  const partes=[];
+  Object.keys(VARIABLES_CUANTITATIVAS).forEach(k=>{partes.push(`<div class="report-variable">${renderizarCuantitativa(registros,k)}</div>`);});
+  Object.keys(VARIABLES_CUALITATIVAS).forEach(k=>{partes.push(`<div class="report-variable">${renderizarCualitativa(registros,k)}</div>`);});
+  $("resultadosInforme").innerHTML=partes.join("");
+}
+function imprimirInforme(){guardarTextosInforme();generarInforme();window.print();}
+["informeInterpretacion","informeConclusiones","informeRecomendaciones"].forEach(id=>$(id).addEventListener("input",guardarTextosInforme));
+
+// ==========================================
 // 13. NAVEGACIÓN ENTRE PESTAÑAS
 // ==========================================
 
@@ -1530,6 +1584,8 @@ prepararFormulario();
 actualizarOpcionesFiltro();
 calcularAnalisis();
 inicializarProbabilidad();
+cargarTextosInforme();
+generarInforme();
 if(registros.length){calcularProbabilidades();calcularContingencia();}
 
 </script>
