@@ -661,29 +661,13 @@ footer {
       </h3>
 
       <div class="actions" style="margin-top:0;margin-bottom:18px">
-        <button type="button" class="btn btn-green" onclick="exportarCSV()">
-          ↓ Exportar CSV (Excel)
+        <button class="btn btn-green" onclick="exportarCSV()">
+          ↓ Exportar datos a Excel (CSV)
         </button>
-        <button type="button" class="btn btn-light" onclick="document.getElementById('archivoCSV').click()">
-          ↑ Importar CSV y unir
-        </button>
-        <button type="button" class="btn btn-amber" onclick="descargarRespaldo()">
-          ↓ Descargar respaldo (.json)
-        </button>
-        <button type="button" class="btn btn-light" onclick="document.getElementById('archivoJSON').click()">
-          ↻ Restaurar respaldo
-        </button>
-        <button type="button" class="btn btn-light" onclick="actualizarTabla()">
+        <button class="btn btn-light" onclick="actualizarTabla()">
           ↻ Actualizar tabla
         </button>
       </div>
-
-      <input type="file" id="archivoCSV" accept=".csv,text/csv" hidden>
-      <input type="file" id="archivoJSON" accept=".json,application/json" hidden>
-      <p style="color:#718096;font-size:12px;margin:0 0 15px">
-        La importación CSV agrega los registros al final de los existentes.
-        La restauración JSON reemplaza la base de datos actual después de solicitar confirmación.
-      </p>
 
       <div class="table-container">
         <table>
@@ -728,12 +712,51 @@ footer {
   <!-- ANALISIS -->
 
   <section id="analisis" class="panel">
-    <div class="card construction">
-      <div class="icon">📊</div>
-      <h2>Análisis estadístico</h2>
-      <p>Esta sección se encuentra en construcción.</p>
-      <p>Aquí se desarrollarán tablas de frecuencia, medidas de tendencia
-      central, dispersión y gráficos estadísticos.</p>
+    <div class="card">
+      <h3 class="section-heading"><span class="section-number">01</span>Configuración del análisis</h3>
+      <div class="form-grid">
+        <div class="field">
+          <label for="variableAnalisis">Variable que desea analizar</label>
+          <select id="variableAnalisis">
+            <option value="consumo">Consumo estimado (L) — Cuantitativa</option>
+            <option value="capacidad">Capacidad del botellón (L) — Cuantitativa</option>
+            <option value="inicial">Nivel de agua inicial (L) — Cuantitativa</option>
+            <option value="final">Nivel de agua final (L) — Cuantitativa</option>
+            <option value="botellones">Botellones reemplazados — Cuantitativa</option>
+            <option value="remanente">Agua remanente retirada (L) — Cuantitativa</option>
+            <option value="frecuencia">Frecuencia de cambio — Cuantitativa</option>
+            <option value="usuarios">Número de usuarios estimados — Cuantitativa</option>
+            <option value="franja">Franja horaria — Cualitativa</option>
+            <option value="piso">Piso — Cualitativa</option>
+            <option value="dispensador">Identificación del dispensador — Cualitativa</option>
+            <option value="jornada">Jornada académica — Cualitativa</option>
+            <option value="estado">Estado del dispensador — Cualitativa</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="filtroVariable">Filtro opcional (variable cualitativa)</label>
+          <select id="filtroVariable">
+            <option value="">Sin filtro</option>
+            <option value="franja">Franja horaria</option>
+            <option value="piso">Piso</option>
+            <option value="dispensador">Identificación del dispensador</option>
+            <option value="jornada">Jornada académica</option>
+            <option value="estado">Estado del dispensador</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="filtroValor">Categoría del filtro</label>
+          <select id="filtroValor" disabled><option value="">Todas las categorías</option></select>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn btn-primary" type="button" onclick="calcularAnalisis()">↻ Actualizar análisis</button>
+      </div>
+      <p class="method-note">El análisis se calcula con los registros almacenados en este navegador. El filtro permite estudiar una variable dentro de una categoría específica, por ejemplo, el consumo únicamente en la jornada de la mañana o en un piso determinado.</p>
+      <div id="mensajeAnalisis" class="message"></div>
+    </div>
+    <div id="resultadosAnalisis">
+      <div class="card construction"><div class="icon">📊</div><h2>Análisis estadístico</h2><p>Seleccione una variable para generar sus resultados.</p></div>
     </div>
   </section>
 
@@ -1134,388 +1157,175 @@ function eliminarRegistro(id) {
 }
 
 // ==========================================
-// 10. EXPORTACIÓN E IMPORTACIÓN CSV / RESPALDOS JSON
+// 10. EXPORTACIÓN A EXCEL / CSV
 // ==========================================
 
-// Esquema único para exportar e importar archivos CSV de EstadiApp.
-// Los números decimales se exportan con coma y el separador de columnas es punto y coma.
-const CSV_COLUMNAS = [
-  "Fecha",
-  "Hora inicial",
-  "Hora final",
-  "Franja horaria",
-  "Piso",
-  "Identificación del dispensador",
-  "Capacidad del botellón (litros)",
-  "Nivel de agua inicial (litros)",
-  "Nivel de agua final (litros)",
-  "Número de botellones reemplazados",
-  "Agua remanente retirada (litros)",
-  "Consumo estimado (litros)",
-  "Frecuencia de cambio",
-  "Hora u horas de cambio",
-  "Estado del dispensador",
-  "Jornada académica",
-  "Número de usuarios estimados",
-  "Observaciones"
-];
-
-const CSV_CAMPOS = [
-  "fecha", "horaInicio", "horaFinal", "franja", "piso", "dispensador",
-  "capacidad", "inicial", "final", "botellones", "remanente", "consumo",
-  "frecuencia", "horasCambio", "estado", "jornada", "usuarios", "observaciones"
-];
-
-const CAMPOS_NUMERICOS = new Set([
-  "capacidad", "inicial", "final", "botellones",
-  "remanente", "consumo", "frecuencia", "usuarios"
-]);
-
-function numeroCSV(valor) {
-  if (typeof valor === "number") return valor;
-  const limpio = String(valor ?? "").trim().replace(/\s/g, "");
-  if (!limpio) return 0;
-
-  // Admite coma decimal (18,9) y punto decimal (18.9).
-  // Si aparecen ambos separadores, interpreta el último como decimal.
-  let normalizado = limpio;
-  if (limpio.includes(",") && limpio.includes(".")) {
-    normalizado = limpio.lastIndexOf(",") > limpio.lastIndexOf(".")
-      ? limpio.replace(/\./g, "").replace(",", ".")
-      : limpio.replace(/,/g, "");
-  } else if (limpio.includes(",")) {
-    normalizado = limpio.replace(",", ".");
-  }
-
-  const n = Number(normalizado);
-  if (!Number.isFinite(n)) throw new Error("Se encontró un valor numérico no válido: " + valor);
-  return n;
-}
-
-function valorDecimalCSV(valor) {
-  if (valor === null || valor === undefined || valor === "") return "";
-  return String(valor).replace(".", ",");
-}
-
-function escaparCSV(valor) {
-  return '"' + String(valor ?? "").replace(/"/g, '""') + '"';
-}
-
-function descargarBlob(contenido, nombre, tipo) {
-  const blob = new Blob([contenido], { type: tipo });
-  const url = URL.createObjectURL(blob);
-  const enlace = document.createElement("a");
-  enlace.href = url;
-  enlace.download = nombre;
-  document.body.appendChild(enlace);
-  enlace.click();
-  enlace.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
-}
-
 function exportarCSV() {
+
   if (!registros.length) {
     alert("No existen registros para exportar.");
     return;
   }
 
-  const filas = registros.map(r => {
-    const valores = [
-      r.fecha,
-      r.horaInicio,
-      r.horaFinal,
-      r.franja || calcularFranja(r.horaInicio),
-      r.piso,
-      r.dispensador,
-      valorDecimalCSV(r.capacidad),
-      valorDecimalCSV(r.inicial),
-      valorDecimalCSV(r.final),
-      r.botellones,
-      valorDecimalCSV(r.remanente),
-      valorDecimalCSV(r.consumo),
-      r.frecuencia,
-      r.horasCambio,
-      r.estado,
-      r.jornada,
-      r.usuarios,
-      r.observaciones
-    ];
-    return valores.map(escaparCSV).join(";");
-  });
+  const encabezados = [
+    "Numero",
+    "Fecha",
+    "Piso",
+    "Dispensador",
+    "Hora inicial",
+    "Hora final",
+    "Franja horaria",
+    "Capacidad litros",
+    "Nivel inicial litros",
+    "Nivel final litros",
+    "Botellones reemplazados",
+    "Remanente litros",
+    "Consumo litros",
+    "Frecuencia de cambio",
+    "Horas de cambio",
+    "Estado",
+    "Jornada",
+    "Usuarios",
+    "Observaciones"
+  ];
+
+  const filas = registros.map(r => [
+    r.id, r.fecha, r.piso, r.dispensador,
+    r.horaInicio, r.horaFinal, r.franja,
+    r.capacidad, r.inicial, r.final,
+    r.botellones, r.remanente, r.consumo,
+    r.frecuencia, r.horasCambio, r.estado,
+    r.jornada, r.usuarios, r.observaciones
+  ]);
+
+  function csvEscape(valor) {
+    return '"' + String(valor ?? "").replace(/"/g, '""') + '"';
+  }
 
   const contenido = [
-    CSV_COLUMNAS.map(escaparCSV).join(";"),
-    ...filas
+    encabezados.map(csvEscape).join(";"),
+    ...filas.map(f => f.map(csvEscape).join(";"))
   ].join("\r\n");
 
-  // BOM UTF-8 para que Excel reconozca correctamente tildes y eñes.
-  descargarBlob("\uFEFF" + contenido,
-    "EstadiApp_Consumo_Agua_UNIPAZ.csv",
-    "text/csv;charset=utf-8;");
-}
-
-// Analizador CSV compatible con campos entre comillas, punto y coma,
-// comas decimales y saltos de línea dentro de observaciones.
-function analizarCSV(texto) {
-  texto = texto.replace(/^\uFEFF/, "");
-  const filas = [];
-  let fila = [];
-  let campo = "";
-  let entreComillas = false;
-
-  for (let i = 0; i < texto.length; i++) {
-    const caracter = texto[i];
-
-    if (entreComillas) {
-      if (caracter === '"') {
-        if (texto[i + 1] === '"') {
-          campo += '"';
-          i++;
-        } else {
-          entreComillas = false;
-        }
-      } else {
-        campo += caracter;
-      }
-    } else if (caracter === '"' && campo.length === 0) {
-      entreComillas = true;
-    } else if (caracter === ";") {
-      fila.push(campo);
-      campo = "";
-    } else if (caracter === "\n" || caracter === "\r") {
-      if (caracter === "\r" && texto[i + 1] === "\n") i++;
-      fila.push(campo);
-      if (fila.some(v => v.trim() !== "")) filas.push(fila);
-      fila = [];
-      campo = "";
-    } else {
-      campo += caracter;
-    }
-  }
-
-  if (entreComillas) throw new Error("El CSV contiene un campo entre comillas que no está cerrado.");
-
-  if (campo.length || fila.length) {
-    fila.push(campo);
-    if (fila.some(v => v.trim() !== "")) filas.push(fila);
-  }
-
-  return filas;
-}
-
-function normalizarEncabezado(valor) {
-  return String(valor ?? "")
-    .replace(/^\uFEFF/, "")
-    .trim()
-    .toLocaleLowerCase("es")
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/\s+/g, " ");
-}
-
-async function importarCSV(archivo) {
-  try {
-    const texto = await archivo.text();
-    const filas = analizarCSV(texto);
-
-    if (!filas.length) {
-      alert("El archivo CSV está vacío.");
-      return;
-    }
-
-    const encabezados = filas[0].map(normalizarEncabezado);
-    const esperados = CSV_COLUMNAS.map(normalizarEncabezado);
-
-    const columnasCoinciden =
-      encabezados.length === esperados.length &&
-      esperados.every((nombre, indice) => encabezados[indice] === nombre);
-
-    if (!columnasCoinciden) {
-      const faltantes = CSV_COLUMNAS.filter((nombre, i) =>
-        encabezados[i] !== normalizarEncabezado(nombre)
-      );
-      alert(
-        "No se importó ningún registro porque el archivo no tiene las mismas columnas " +
-        "o no están en el mismo orden que el CSV exportado por EstadiApp.\n\n" +
-        "Verifique que el archivo provenga de esta aplicación y no haya modificado los encabezados."
-      );
-      return;
-    }
-
-    const datosCSV = filas.slice(1);
-    const nuevos = [];
-    const errores = [];
-
-    datosCSV.forEach((columnas, indice) => {
-      if (columnas.length !== CSV_CAMPOS.length) {
-        errores.push("Fila " + (indice + 2) + ": número de columnas incorrecto.");
-        return;
-      }
-
-      try {
-        const r = {};
-        CSV_CAMPOS.forEach((campo, i) => {
-          const valor = columnas[i] ?? "";
-          r[campo] = CAMPOS_NUMERICOS.has(campo) ? numeroCSV(valor) : valor.trim();
-        });
-
-        // Comprobaciones básicas para evitar incorporar filas corruptas.
-        if (!r.fecha || !r.horaInicio || !r.horaFinal ||
-            !r.piso || !r.dispensador || !r.estado || !r.jornada) {
-          throw new Error("faltan datos obligatorios");
-        }
-
-        if (r.capacidad <= 0 || r.inicial < 0 || r.final < 0 ||
-            r.inicial > r.capacidad || r.final > r.capacidad ||
-            r.botellones < 0 || r.remanente < 0 ||
-            r.frecuencia < 0 || r.usuarios < 0 || r.consumo < 0) {
-          throw new Error("hay cantidades fuera de los rangos permitidos");
-        }
-
-        if (!r.franja) r.franja = calcularFranja(r.horaInicio);
-
-        nuevos.push(r);
-      } catch (errorFila) {
-        errores.push("Fila " + (indice + 2) + ": " + errorFila.message);
-      }
-    });
-
-    if (!nuevos.length) {
-      alert("No se importaron registros. " +
-        (errores.length ? errores.slice(0, 5).join("\n") : "El archivo no contiene filas de datos."));
-      return;
-    }
-
-    const maxId = registros.reduce((max, r) => Math.max(max, Number(r.id) || 0), 0);
-    const importados = nuevos.map((r, i) => ({
-      id: maxId + i + 1,
-      ...r
-    }));
-
-    const anteriores = registros;
-    registros = registros.concat(importados);
-
-    if (!guardarLocal()) {
-      registros = anteriores;
-      return;
-    }
-
-    actualizarTabla();
-
-    let aviso = "Importación completada: " + importados.length +
-      " registro(s) agregado(s). Los registros anteriores se conservaron.";
-
-    if (errores.length) {
-      aviso += " Se omitieron " + errores.length + " fila(s) con errores.";
-      console.warn("Filas CSV omitidas:", errores);
-    }
-
-    mostrarMensaje(aviso, errores.length ? "error" : "success");
-    alert(aviso);
-
-  } catch (error) {
-    alert("No fue posible leer el archivo CSV: " + error.message);
-  } finally {
-    $("archivoCSV").value = "";
-  }
-}
-
-$("archivoCSV").addEventListener("change", function(e) {
-  const archivo = e.target.files[0];
-  if (archivo) importarCSV(archivo);
-});
-
-// Respaldo JSON: conserva los registros y la versión de la aplicación.
-function descargarRespaldo() {
-  const respaldo = {
-    aplicacion: "EstadiApp – Docente",
-    version: 1,
-    fechaRespaldo: new Date().toISOString(),
-    registros: registros
-  };
-
-  descargarBlob(
-    JSON.stringify(respaldo, null, 2),
-    "EstadiApp_Respaldo_UNIPAZ.json",
-    "application/json;charset=utf-8;"
+  const blob = new Blob(
+    ["\uFEFF" + contenido],
+    { type: "text/csv;charset=utf-8;" }
   );
+
+  const url = URL.createObjectURL(blob);
+  const enlace = document.createElement("a");
+
+  enlace.href = url;
+  enlace.download = "EstadiApp_Consumo_Agua_UNIPAZ.csv";
+
+  document.body.appendChild(enlace);
+  enlace.click();
+  enlace.remove();
+
+  URL.revokeObjectURL(url);
 }
-
-async function restaurarRespaldo(archivo) {
-  try {
-    const texto = await archivo.text();
-    const datos = JSON.parse(texto);
-
-    const lista = Array.isArray(datos) ? datos : datos.registros;
-
-    if (!Array.isArray(lista)) {
-      throw new Error("El archivo no contiene una lista válida de registros.");
-    }
-
-    const validos = lista.every(r =>
-      r && typeof r === "object" &&
-      r.fecha && r.horaInicio && r.horaFinal &&
-      r.piso && r.dispensador &&
-      Number.isFinite(Number(r.capacidad)) &&
-      Number.isFinite(Number(r.consumo))
-    );
-
-    if (!validos) {
-      throw new Error("El respaldo contiene registros incompletos o con estructura no reconocida.");
-    }
-
-    const confirmar = confirm(
-      "El respaldo contiene " + lista.length + " registro(s).\n\n" +
-      "Restaurar reemplazará todos los registros que están actualmente en este navegador.\n\n" +
-      "¿Desea continuar?"
-    );
-
-    if (!confirmar) return;
-
-    const anteriores = registros;
-    let siguienteId = 1;
-
-    registros = lista.map(r => ({
-      ...r,
-      id: siguienteId++,
-      franja: r.franja || calcularFranja(r.horaInicio),
-      capacidad: Number(r.capacidad),
-      inicial: Number(r.inicial) || 0,
-      final: Number(r.final) || 0,
-      botellones: Number(r.botellones) || 0,
-      remanente: Number(r.remanente) || 0,
-      consumo: Number(r.consumo) || 0,
-      frecuencia: Number(r.frecuencia) || 0,
-      usuarios: Number(r.usuarios) || 0
-    }));
-
-    if (!guardarLocal()) {
-      registros = anteriores;
-      return;
-    }
-
-    actualizarTabla();
-    mostrarMensaje(
-      "Respaldo restaurado correctamente. Se recuperaron " +
-      registros.length + " registro(s).",
-      "success"
-    );
-    alert("Respaldo restaurado correctamente. Se recuperaron " +
-      registros.length + " registro(s).");
-
-  } catch (error) {
-    alert("No fue posible restaurar el respaldo: " + error.message);
-  } finally {
-    $("archivoJSON").value = "";
-  }
-}
-
-$("archivoJSON").addEventListener("change", function(e) {
-  const archivo = e.target.files[0];
-  if (archivo) restaurarRespaldo(archivo);
-});
 
 // ==========================================
+
+// 11. ANÁLISIS ESTADÍSTICO DESCRIPTIVO
+const VARIABLES_CUALITATIVAS = {
+  franja:"Franja horaria", piso:"Piso", dispensador:"Identificación del dispensador",
+  jornada:"Jornada académica", estado:"Estado del dispensador"
+};
+const VARIABLES_CUANTITATIVAS = {
+  consumo:"Consumo estimado (L)", capacidad:"Capacidad del botellón (L)",
+  inicial:"Nivel de agua inicial (L)", final:"Nivel de agua final (L)",
+  botellones:"Botellones reemplazados", remanente:"Agua remanente retirada (L)",
+  frecuencia:"Frecuencia de cambio", usuarios:"Número de usuarios estimados"
+};
+function formatoAnalisis(v,d=2) {
+  return Number.isFinite(Number(v)) ? Number(v).toLocaleString("es-CO",{minimumFractionDigits:d,maximumFractionDigits:d}) : "—";
+}
+function actualizarOpcionesFiltro() {
+  const variable=$("filtroVariable").value, sel=$("filtroValor"), anterior=sel.value;
+  sel.innerHTML='<option value="">Todas las categorías</option>';
+  if(!variable){sel.disabled=true;return;}
+  [...new Set(registros.map(r=>String(r[variable]??"").trim()).filter(Boolean))]
+    .sort((a,b)=>a.localeCompare(b,"es")).forEach(c=>{
+      const o=document.createElement("option");o.value=c;o.textContent=c;sel.appendChild(o);
+    });
+  sel.disabled=false;if([...sel.options].some(o=>o.value===anterior))sel.value=anterior;
+}
+function datosFiltradosAnalisis(){
+  const f=$("filtroVariable").value,v=$("filtroValor").value;
+  return !f||!v?registros.slice():registros.filter(r=>String(r[f]??"").trim()===v);
+}
+function tablaHTML(cab,filas){
+ return `<div class="table-container"><table style="min-width:700px"><thead><tr>${cab.map(x=>`<th>${escapar(x)}</th>`).join("")}</tr></thead><tbody>${filas.length?filas.map(f=>`<tr>${f.map(x=>`<td>${x}</td>`).join("")}</tr>`).join(""):`<tr><td colspan="${cab.length}" class="empty">No hay datos para mostrar.</td></tr>`}</tbody></table></div>`;
+}
+function cuartilInc(a,p){
+ const pos=(a.length-1)*p,i=Math.floor(pos),f=pos-i;
+ return a.length===1?a[0]:a[i]+f*(a[Math.min(i+1,a.length-1)]-a[i]);
+}
+function decimalesDatos(a){
+ return a.reduce((m,v)=>Math.max(m,(String(v).split(".")[1]||"").length),0);
+}
+function renderizarCuantitativa(datos,variable){
+ const a=datos.map(r=>Number(r[variable])).filter(Number.isFinite).sort((x,y)=>x-y);
+ if(!a.length)return '<div class="card"><p class="empty">No existen datos numéricos válidos para esta variable.</p></div>';
+ const n=a.length,suma=a.reduce((x,y)=>x+y,0),media=suma/n,mid=Math.floor(n/2);
+ const mediana=n%2?a[mid]:(a[mid-1]+a[mid])/2;
+ const conteo=new Map();a.forEach(v=>conteo.set(v,(conteo.get(v)||0)+1));
+ const maxf=Math.max(...conteo.values()),modas=[...conteo].filter(([v,f])=>f>1&&f===maxf).map(([v])=>v);
+ const min=a[0],max=a[n-1],rango=max-min;
+ const vari=n>1?a.reduce((s,v)=>s+(v-media)**2,0)/(n-1):null;
+ const desv=vari===null?null:Math.sqrt(vari),cv=desv!==null&&media!==0?desv/Math.abs(media)*100:null;
+ const q1=cuartilInc(a,.25),q2=cuartilInc(a,.5),q3=cuartilInc(a,.75),ric=q3-q1;
+ const dec=decimalesDatos(a),fmt=v=>formatoAnalisis(v,Math.min(Math.max(dec,2),6));
+ const moda=modas.length?modas.map(fmt).join("; "):"No hay moda";
+ const medidas=[
+ ["Cantidad de datos (n)",formatoAnalisis(n,0),"n = número de observaciones válidas"],
+ ["Suma",fmt(suma),"Σxi"],
+ ["Media aritmética",fmt(media),"x̄ = Σxi / n"],
+ ["Mediana",fmt(mediana),"Valor central de los datos ordenados"],
+ ["Moda",moda,"Valor(es) repetido(s) con mayor frecuencia; si ninguno se repite, no hay moda"],
+ ["Mínimo",fmt(min),"Menor valor observado"],["Máximo",fmt(max),"Mayor valor observado"],
+ ["Rango",fmt(rango),"R = máximo − mínimo"],
+ ["Varianza muestral",vari===null?"No definida (n < 2)":fmt(vari),"s² = Σ(xi − x̄)² / (n − 1)"],
+ ["Desviación estándar muestral",desv===null?"No definida (n < 2)":fmt(desv),"s = √s²"],
+ ["Coeficiente de variación",cv===null?"No definido":formatoAnalisis(cv,2)+" %","CV = (s / |x̄|) × 100"],
+ ["Primer cuartil (Q1)",fmt(q1),"CUARTIL.INC: posición (n − 1) × 0,25"],
+ ["Segundo cuartil (Q2)",fmt(q2),"CUARTIL.INC: posición (n − 1) × 0,50"],
+ ["Tercer cuartil (Q3)",fmt(q3),"CUARTIL.INC: posición (n − 1) × 0,75"],
+ ["Rango intercuartílico (RIC)",fmt(ric),"RIC = Q3 − Q1"]
+ ];
+ let html=`<div class="card"><h3 class="section-heading"><span class="section-number">02</span>Medidas estadísticas — ${escapar(VARIABLES_CUANTITATIVAS[variable])}</h3>${tablaHTML(["Medida","Resultado","Fórmula / método"],medidas.map(m=>[escapar(m[0]),`<strong>${escapar(m[1])}</strong>`,escapar(m[2])]))}<p class="method-note">Varianza y desviación estándar muestrales: denominador n − 1. Los cuartiles usan interpolación lineal equivalente a CUARTIL.INC de Excel.${n===1?" Con un solo dato no se definen varianza ni desviación estándar muestrales.":""}</p></div>`;
+ if(n<2)return html;
+ const k=Math.max(1,Math.round(1+3.322*Math.log10(n))),factor=10**dec;
+ let amplitud=Math.ceil((rango/k-1e-12)*factor)/factor;if(amplitud<=0)amplitud=1/factor;
+ let acum=0;const clases=[];
+ for(let i=0;i<k;i++){
+  const li=min+i*amplitud,ls=min+(i+1)*amplitud;
+  const fi=a.filter(v=>i===k-1?v>=li-1e-10&&v<=ls+1e-10:v>=li-1e-10&&v<ls-1e-10).length;
+  acum+=fi;clases.push([i+1,fmt(li),fmt(ls),fmt((li+ls)/2),fi,acum,formatoAnalisis(fi/n,4),formatoAnalisis(acum/n*100,2)+" %"]);
+ }
+ html+=`<div class="card"><h3 class="section-heading"><span class="section-number">03</span>Tabla de frecuencias para datos agrupados</h3><p>Sturges: k = 1 + 3,322 × log₁₀(n) = ${formatoAnalisis(1+3.322*Math.log10(n),2)}; redondeado al entero: <strong>${k} clases</strong>. Amplitud: A = R ÷ k = ${fmt(rango/k)}; redondeada hacia arriba a ${dec} decimales: <strong>${fmt(amplitud)}</strong>.</p>${tablaHTML(["Clase","Li","Ls","Marca de clase xi","fi","Fi","hi","Hi (%)"],clases)}<p class="method-note">Intervalos [Li, Ls); incluyen Li y excluyen Ls. La última clase incluye ambos límites. hi es frecuencia relativa y Hi es porcentaje acumulado.</p></div>`;
+ return html;
+}
+function renderizarCualitativa(datos,variable){
+ const mapa=new Map();datos.forEach(r=>{const c=String(r[variable]??"").trim()||"(Sin dato)";mapa.set(c,(mapa.get(c)||0)+1);});
+ const lista=[...mapa].sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0],"es")),n=lista.reduce((s,x)=>s+x[1],0);
+ let acum=0;const filas=lista.map(([c,fi])=>{acum+=fi;return[escapar(c),fi,acum,formatoAnalisis(fi/n,4),formatoAnalisis(acum/n,4),formatoAnalisis(fi/n*100,2)+" %"];});
+ return `<div class="card"><h3 class="section-heading"><span class="section-number">02</span>Distribución de frecuencias — ${escapar(VARIABLES_CUALITATIVAS[variable])}</h3><p>Total de observaciones: <strong>${n}</strong></p>${tablaHTML(["Categoría","fi","Fi","hi","Hi","%"],filas)}<p class="method-note">fi: frecuencia absoluta; Fi: frecuencia absoluta acumulada; hi: frecuencia relativa; Hi: frecuencia relativa acumulada; %: porcentaje de cada categoría.</p></div>`;
+}
+function calcularAnalisis(){
+ actualizarOpcionesFiltro();
+ const variable=$("variableAnalisis").value,datos=datosFiltradosAnalisis(),f=$("filtroVariable").value,v=$("filtroValor").value;
+ if(!datos.length){$("resultadosAnalisis").innerHTML='<div class="card"><p class="empty">No hay registros que cumplan el filtro seleccionado.</p></div>';return;}
+ const nombre=VARIABLES_CUALITATIVAS[variable]||VARIABLES_CUANTITATIVAS[variable];
+ const detalle=f&&v?`Filtro aplicado: ${VARIABLES_CUALITATIVAS[f]} = ${v}.`:"Sin filtro aplicado.";
+ const tabla=VARIABLES_CUANTITATIVAS[variable]?renderizarCuantitativa(datos,variable):renderizarCualitativa(datos,variable);
+ $("resultadosAnalisis").innerHTML=`<div class="card"><p><strong>Variable:</strong> ${escapar(nombre)} · <strong>Registros incluidos:</strong> ${datos.length}. ${escapar(detalle)}</p></div>${tabla}`;
+}
+$("variableAnalisis").addEventListener("change",calcularAnalisis);
+$("filtroVariable").addEventListener("change",()=>{actualizarOpcionesFiltro();calcularAnalisis();});
+$("filtroValor").addEventListener("change",calcularAnalisis);
+
 // 11. NAVEGACIÓN ENTRE PESTAÑAS
 // ==========================================
 
@@ -1558,6 +1368,8 @@ $("registroForm").addEventListener("reset", () => {
 
 actualizarTabla();
 prepararFormulario();
+actualizarOpcionesFiltro();
+calcularAnalisis();
 
 </script>
 
