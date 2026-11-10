@@ -769,12 +769,54 @@ footer {
   <!-- PROBABILIDAD -->
 
   <section id="probabilidad" class="panel">
-    <div class="card construction">
-      <div class="icon">🎲</div>
-      <h2>Probabilidad</h2>
-      <p>Esta sección se encuentra en construcción.</p>
-      <p>Aquí se realizarán cálculos de probabilidades y análisis
-      de eventos relacionados con el consumo de agua.</p>
+    <div class="card">
+      <h3 class="section-heading"><span class="section-number">01</span>Configuración de eventos</h3>
+      <p>Defina el evento A y, si lo desea, un evento B para calcular probabilidades simples, conjuntas y condicionales con los registros guardados.</p>
+      <div class="form-grid">
+        <div class="field">
+          <label for="probVariableA">Variable del evento A</label>
+          <select id="probVariableA"></select>
+        </div>
+        <div class="field" id="probCondicionWrap">
+          <label for="probCondicionA">Condición de A</label>
+          <select id="probCondicionA">
+            <option value="gt">Mayor que (&gt;)</option>
+            <option value="le">Menor o igual que (≤)</option>
+          </select>
+        </div>
+        <div class="field" id="probValorWrap">
+          <label for="probValorA">Valor de referencia</label>
+          <input type="number" id="probValorA" step="any" placeholder="Escriba un valor">
+        </div>
+        <div class="field" id="probCategoriaAWrap" style="display:none">
+          <label for="probCategoriaA">Categoría de A</label>
+          <select id="probCategoriaA"></select>
+        </div>
+        <div class="field">
+          <label for="probVariableB">Evento B (opcional): variable cualitativa</label>
+          <select id="probVariableB"><option value="">Sin evento B</option></select>
+        </div>
+        <div class="field" id="probCategoriaBWrap" style="display:none">
+          <label for="probCategoriaB">Categoría de B</label>
+          <select id="probCategoriaB"></select>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn btn-primary" type="button" onclick="calcularProbabilidades()">Calcular</button>
+      </div>
+      <div id="mensajeProbabilidad" class="message"></div>
+    </div>
+    <div id="resultadosProbabilidad"></div>
+
+    <div class="card">
+      <h3 class="section-heading"><span class="section-number">02</span>Tabla de contingencia</h3>
+      <p>Seleccione dos variables cualitativas para cruzar sus categorías. Se incluyen los totales por fila, columna y el total general.</p>
+      <div class="form-grid">
+        <div class="field"><label for="contVariableFila">Variable para las filas</label><select id="contVariableFila"></select></div>
+        <div class="field"><label for="contVariableCol">Variable para las columnas</label><select id="contVariableCol"></select></div>
+      </div>
+      <div class="actions"><button class="btn btn-green" type="button" onclick="calcularContingencia()">Generar tabla</button></div>
+      <div id="resultadoContingencia"></div>
     </div>
   </section>
 
@@ -1337,9 +1379,113 @@ function calcularAnalisis(){
 }
 $("variableAnalisis").addEventListener("change",calcularAnalisis);
 $("filtroVariable").addEventListener("change",()=>{actualizarOpcionesFiltro();calcularAnalisis();});
+
 $("filtroValor").addEventListener("change",calcularAnalisis);
 
-// 11. NAVEGACIÓN ENTRE PESTAÑAS
+// ==========================================
+// 12. PROBABILIDAD Y TABLAS DE CONTINGENCIA
+// ==========================================
+function valorCualitativo(r, variable) {
+  return String(r[variable] ?? "").trim() || "(Sin dato)";
+}
+function opcionesVariable(select, mapa, incluirVacio=false, textoVacio="Seleccione...") {
+  select.innerHTML = (incluirVacio ? `<option value="">${textoVacio}</option>` : "") +
+    Object.entries(mapa).map(([k,v])=>`<option value="${escapar(k)}">${escapar(v)}</option>`).join("");
+}
+function categoriasVariable(variable, select) {
+  const anterior=select.value;
+  const cats=[...new Set(registros.map(r=>valorCualitativo(r,variable)))].sort((a,b)=>a.localeCompare(b,"es"));
+  select.innerHTML=cats.length?cats.map(c=>`<option value="${escapar(c)}">${escapar(c)}</option>`).join(""):'<option value="">Sin categorías</option>';
+  if(cats.includes(anterior))select.value=anterior;
+}
+function actualizarConfiguracionProbabilidad() {
+  const variable=$("probVariableA").value, cual=!!VARIABLES_CUALITATIVAS[variable];
+  $("probCondicionWrap").style.display=cual?"none":"flex";
+  $("probValorWrap").style.display=cual?"none":"flex";
+  $("probCategoriaAWrap").style.display=cual?"flex":"none";
+  if(cual)categoriasVariable(variable,$("probCategoriaA"));
+  const b=$("probVariableB").value;
+  $("probCategoriaBWrap").style.display=b?"flex":"none";
+  if(b)categoriasVariable(b,$("probCategoriaB"));
+}
+function inicializarProbabilidad() {
+  opcionesVariable($("probVariableA"),{...VARIABLES_CUANTITATIVAS,...VARIABLES_CUALITATIVAS});
+  opcionesVariable($("probVariableB"),VARIABLES_CUALITATIVAS,true,"Sin evento B");
+  opcionesVariable($("contVariableFila"),VARIABLES_CUALITATIVAS);
+  opcionesVariable($("contVariableCol"),VARIABLES_CUALITATIVAS);
+  if($("contVariableCol").options.length>1)$("contVariableCol").selectedIndex=1;
+  actualizarConfiguracionProbabilidad();
+}
+$("probVariableA").addEventListener("change",actualizarConfiguracionProbabilidad);
+$("probVariableB").addEventListener("change",actualizarConfiguracionProbabilidad);
+
+function calcularProbabilidades() {
+  const salida=$("resultadosProbabilidad"), aviso=$("mensajeProbabilidad");
+  aviso.className="message";aviso.textContent="";
+  if(!registros.length){aviso.textContent="No hay registros guardados para calcular probabilidades.";aviso.className="message error";salida.innerHTML="";return;}
+  const variableA=$("probVariableA").value, esCual=!!VARIABLES_CUALITATIVAS[variableA];
+  if(!variableA){aviso.textContent="Seleccione una variable para el evento A.";aviso.className="message error";return;}
+  let predA;
+  let descripcionA;
+  if(esCual){
+    const cat=$("probCategoriaA").value;
+    if(!cat){aviso.textContent="Seleccione una categoría para el evento A.";aviso.className="message error";return;}
+    predA=r=>valorCualitativo(r,variableA)===cat;
+    descripcionA=`${VARIABLES_CUALITATIVAS[variableA]} = ${cat}`;
+  }else{
+    const raw=$("probValorA").value, limite=Number(raw), condicion=$("probCondicionA").value;
+    if(raw.trim()===""||!Number.isFinite(limite)){aviso.textContent="Escriba un valor numérico válido para el evento A.";aviso.className="message error";return;}
+    predA=r=>r[variableA]!==null&&r[variableA]!==""&&Number.isFinite(Number(r[variableA]))&&(condicion==="gt"?Number(r[variableA])>limite:Number(r[variableA])<=limite);
+    descripcionA=`${VARIABLES_CUANTITATIVAS[variableA]} ${condicion==="gt"?">":"≤"} ${formatoAnalisis(limite,2)}`;
+  }
+  const n=registros.length, casosA=registros.filter(predA).length, pA=casosA/n;
+  const variableB=$("probVariableB").value;
+  let pB=null,pAB=null,pAcondB=null,casosB=0,casosAB=0,descripcionB="";
+  if(variableB){
+    const catB=$("probCategoriaB").value;
+    if(!catB){aviso.textContent="Seleccione una categoría para el evento B.";aviso.className="message error";return;}
+    const predB=r=>valorCualitativo(r,variableB)===catB;
+    casosB=registros.filter(predB).length;casosAB=registros.filter(r=>predA(r)&&predB(r)).length;
+    pB=casosB/n;pAB=casosAB/n;pAcondB=casosB?casosAB/casosB:null;
+    descripcionB=`${VARIABLES_CUALITATIVAS[variableB]} = ${catB}`;
+  }
+  const pct=x=>x===null?"No definida":formatoAnalisis(x*100,2)+" %";
+  const oper=(nombre,casos,den,prob)=>`<tr><td>${nombre}</td><td>${casos} ÷ ${den}</td><td><strong>${pct(prob)}</strong></td></tr>`;
+  let filas=oper("P(A)",casosA,n,pA);
+  if(variableB){filas+=oper("P(B)",casosB,n,pB)+oper("P(A ∩ B)",casosAB,n,pAB)+oper("P(A | B)",casosAB,casosB,pAcondB);}
+  let interpretacion="No se definió el evento B, por lo que no es posible comparar la probabilidad condicionada.";
+  if(variableB){
+    if(pAcondB===null)interpretacion="El evento B no ocurrió en los registros; P(A | B) no está definida y no es posible comparar.";
+    else{
+      const diferencia=pAcondB-pA;
+      const tolerancia=0.02;
+      interpretacion=Math.abs(diferencia)<=tolerancia
+        ?`B casi no cambia la probabilidad de A: P(A | B) = ${pct(pAcondB)} y P(A) = ${pct(pA)}.`
+        :diferencia>0
+          ?`B aumenta la probabilidad de A: pasa de ${pct(pA)} a ${pct(pAcondB)} (diferencia de ${formatoAnalisis(diferencia*100,2)} puntos porcentuales).`
+          :`B disminuye la probabilidad de A: pasa de ${pct(pA)} a ${pct(pAcondB)} (diferencia de ${formatoAnalisis(Math.abs(diferencia)*100,2)} puntos porcentuales).`;
+    }
+  }
+  salida.innerHTML=`<div class="card"><h3 class="section-heading"><span class="section-number">Resultado</span>Probabilidades de los eventos</h3><p><strong>Evento A:</strong> ${escapar(descripcionA)}${variableB?`<br><strong>Evento B:</strong> ${escapar(descripcionB)}`:""}</p>${tablaHTML(["Probabilidad","Operación","Resultado"],filas.split("</tr>").filter(Boolean).map(x=>x.replace("<tr>","").split("</td>").filter(Boolean).map(y=>y.replace(/<td>/g,""))))}<div class="method-note"><strong>Interpretación:</strong> ${escapar(interpretacion)}<br>Se considera que el cambio es «casi nulo» cuando la diferencia absoluta entre P(A | B) y P(A) no supera 2 puntos porcentuales. Los cálculos usan el total de registros disponibles (N = ${n}).</div></div>`;
+}
+
+function calcularContingencia() {
+  const cont=$("resultadoContingencia"), f=$("contVariableFila").value,c=$("contVariableCol").value;
+  if(!registros.length){cont.innerHTML='<p class="message error">No hay registros para construir la tabla.</p>';return;}
+  if(!f||!c||f===c){cont.innerHTML='<p class="message error">Seleccione dos variables cualitativas diferentes.</p>';return;}
+  const filas=[...new Set(registros.map(r=>valorCualitativo(r,f)))].sort((a,b)=>a.localeCompare(b,"es"));
+  const cols=[...new Set(registros.map(r=>valorCualitativo(r,c)))].sort((a,b)=>a.localeCompare(b,"es"));
+  const matriz=filas.map(x=>cols.map(y=>registros.filter(r=>valorCualitativo(r,f)===x&&valorCualitativo(r,c)===y).length));
+  const totCol=cols.map((_,j)=>matriz.reduce((s,row)=>s+row[j],0));
+  const total=totCol.reduce((s,x)=>s+x,0);
+  const cab=[VARIABLES_CUALITATIVAS[f],...cols,"Total fila"];
+  const cuerpo=filas.map((cat,i)=>[escapar(cat),...matriz[i],matriz[i].reduce((s,x)=>s+x,0)]);
+  cuerpo.push(["Total columna",...totCol,total]);
+  cont.innerHTML=`<h4 style="color:var(--azul);margin:20px 0 10px">${escapar(VARIABLES_CUALITATIVAS[f])} × ${escapar(VARIABLES_CUALITATIVAS[c])}</h4>${tablaHTML(cab,cuerpo.map(row=>row.map((v,i)=>i===0?`<strong>${v}</strong>`:`<strong>${v}</strong>`)))}<p class="method-note">Cada celda muestra la frecuencia conjunta de las dos categorías. Total general: ${total} registros.</p>`;
+}
+
+// ==========================================
+// 13. NAVEGACIÓN ENTRE PESTAÑAS
 // ==========================================
 
 document.querySelectorAll(".tab").forEach(tab => {
@@ -1383,6 +1529,8 @@ actualizarTabla();
 prepararFormulario();
 actualizarOpcionesFiltro();
 calcularAnalisis();
+inicializarProbabilidad();
+if(registros.length){calcularProbabilidades();calcularContingencia();}
 
 </script>
 
