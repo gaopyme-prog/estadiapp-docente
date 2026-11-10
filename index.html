@@ -1,0 +1,1236 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#1F3A5F">
+<title>EstadiApp – Docente | UNIPAZ</title>
+
+<style>
+:root {
+  --azul: #1F3A5F;
+  --verde: #2A9D8F;
+  --ambar: #E9A23B;
+  --fondo: #F4F7FA;
+  --blanco: #FFFFFF;
+  --texto: #263445;
+  --gris: #718096;
+  --borde: #DFE6ED;
+  --rojo: #D9534F;
+  --sombra: 0 5px 20px rgba(31,58,95,.07);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  background: var(--fondo);
+  color: var(--texto);
+  font-size: 14px;
+}
+
+button, input, select, textarea { font: inherit; }
+
+header {
+  background: linear-gradient(120deg, #1F3A5F, #294E75);
+  color: white;
+  padding: 28px 5%;
+}
+
+.header-content {
+  max-width: 1400px;
+  margin: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.logo {
+  width: 52px;
+  height: 52px;
+  background: rgba(255,255,255,.14);
+  border: 1px solid rgba(255,255,255,.3);
+  border-radius: 13px;
+  display: grid;
+  place-items: center;
+  font-size: 27px;
+}
+
+.brand h1 { margin: 0; font-size: 25px; }
+.brand p { margin: 6px 0 0; opacity: .8; }
+
+.header-tag {
+  border: 1px solid rgba(255,255,255,.3);
+  padding: 9px 15px;
+  border-radius: 30px;
+  font-size: 12px;
+}
+
+main {
+  max-width: 1400px;
+  padding: 25px 4%;
+  margin: auto;
+}
+
+.project-title {
+  background: white;
+  border-radius: 14px;
+  padding: 20px 24px;
+  box-shadow: var(--sombra);
+  margin-bottom: 22px;
+  border-left: 5px solid var(--verde);
+}
+
+.project-title h2 {
+  color: var(--azul);
+  margin: 0 0 8px;
+  font-size: 19px;
+}
+
+.project-title p {
+  color: var(--gris);
+  margin: 0;
+  line-height: 1.6;
+}
+
+.tabs {
+  display: flex;
+  gap: 8px;
+  background: white;
+  padding: 8px;
+  border-radius: 12px;
+  margin-bottom: 22px;
+  box-shadow: var(--sombra);
+  overflow-x: auto;
+}
+
+.tab {
+  border: none;
+  background: transparent;
+  color: var(--gris);
+  padding: 12px 23px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.tab.active {
+  background: var(--azul);
+  color: white;
+}
+
+.panel { display: none; }
+.panel.active { display: block; }
+
+.card {
+  background: white;
+  border-radius: 13px;
+  padding: 23px;
+  box-shadow: var(--sombra);
+  margin-bottom: 22px;
+}
+
+.section-heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--azul);
+  font-size: 17px;
+  margin: 0 0 20px;
+}
+
+.section-number {
+  background: #E8F4F2;
+  color: var(--verde);
+  padding: 7px 11px;
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.field label {
+  color: #44546A;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.field input, .field select, .field textarea {
+  width: 100%;
+  padding: 11px 12px;
+  border: 1px solid var(--borde);
+  border-radius: 8px;
+  background: #FCFDFE;
+  color: var(--texto);
+  outline: none;
+  min-width: 0;
+}
+
+.field input:focus, .field select:focus, .field textarea:focus {
+  border-color: var(--verde);
+  box-shadow: 0 0 0 3px rgba(42,157,143,.10);
+}
+
+.field textarea {
+  resize: vertical;
+  min-height: 75px;
+}
+
+.field small {
+  color: var(--gris);
+  font-size: 11px;
+}
+
+.full { grid-column: 1 / -1; }
+
+.calculation {
+  background: #EAF5F3;
+  border: 1px solid #C9E8E2;
+  border-radius: 10px;
+  padding: 17px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+}
+
+.calculation strong { color: var(--azul); }
+.calculation .value {
+  color: #188675;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.method-note {
+  color: #53677A;
+  background: #FFF8E9;
+  border-left: 4px solid var(--ambar);
+  padding: 13px;
+  border-radius: 5px;
+  line-height: 1.6;
+  margin-top: 15px;
+  font-size: 12px;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.btn {
+  border: none;
+  padding: 12px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: .2s;
+}
+
+.btn:hover { filter: brightness(.94); transform: translateY(-1px); }
+.btn-primary { background: var(--azul); color: white; }
+.btn-green { background: var(--verde); color: white; }
+.btn-amber { background: var(--ambar); color: #263445; }
+.btn-light { background: #EAF0F5; color: var(--azul); }
+.btn-danger { background: #FCEAEA; color: var(--rojo); }
+
+.message {
+  display: none;
+  padding: 13px;
+  border-radius: 8px;
+  margin-top: 15px;
+  line-height: 1.5;
+}
+
+.message.success { display: block; background: #E7F6EF; color: #18764B; }
+.message.error { display: block; background: #FCEAEA; color: #A82E2E; }
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+  margin-bottom: 22px;
+}
+
+.stat {
+  background: white;
+  border-radius: 12px;
+  padding: 19px;
+  box-shadow: var(--sombra);
+  border-top: 4px solid var(--verde);
+}
+
+.stat:nth-child(2n) { border-top-color: var(--ambar); }
+
+.stat-label {
+  color: var(--gris);
+  font-size: 12px;
+  margin-bottom: 10px;
+}
+
+.stat-value {
+  font-size: 25px;
+  font-weight: bold;
+  color: var(--azul);
+}
+
+.stat small {
+  color: var(--gris);
+  display: block;
+  margin-top: 6px;
+}
+
+.table-container {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--borde);
+  border-radius: 9px;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  min-width: 1600px;
+  font-size: 12px;
+}
+
+th {
+  background: var(--azul);
+  color: white;
+  text-align: left;
+  padding: 13px 10px;
+  white-space: nowrap;
+}
+
+td {
+  padding: 11px 10px;
+  border-bottom: 1px solid var(--borde);
+  white-space: nowrap;
+}
+
+tr:hover td { background: #F5FAFC; }
+
+.empty {
+  text-align: center;
+  padding: 35px;
+  color: var(--gris);
+}
+
+.badge-status {
+  padding: 5px 9px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: bold;
+}
+
+.operativo { background: #E3F5EC; color: #18764B; }
+.inactivo { background: #FCEAEA; color: #A82E2E; }
+
+.construction {
+  text-align: center;
+  padding: 80px 20px;
+  color: var(--gris);
+}
+
+.construction .icon { font-size: 50px; }
+.construction h2 { color: var(--azul); }
+
+footer {
+  text-align: center;
+  padding: 25px;
+  color: var(--gris);
+  font-size: 12px;
+}
+
+@media(max-width:850px) {
+  .form-grid { grid-template-columns: repeat(2,1fr); }
+  .stats-grid { grid-template-columns: repeat(2,1fr); }
+  .header-tag { display: none; }
+}
+
+@media(max-width:550px) {
+  header { padding: 20px 15px; }
+  .brand h1 { font-size: 20px; }
+  main { padding: 17px 12px; }
+  .form-grid { grid-template-columns: 1fr; }
+  .stats-grid { grid-template-columns: 1fr 1fr; gap: 9px; }
+  .stat { padding: 13px; }
+  .stat-value { font-size: 20px; }
+  .card { padding: 16px; }
+  .calculation { align-items: flex-start; flex-direction: column; }
+  .tab { padding: 11px 15px; }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <div class="header-content">
+    <div class="brand">
+      <div class="logo">💧</div>
+      <div>
+        <h1>EstadiApp – Docente</h1>
+        <p>Herramienta de recolección de datos estadísticos</p>
+      </div>
+    </div>
+    <div class="header-tag">UNIPAZ · PROYECTO DE ESTADÍSTICA</div>
+  </div>
+</header>
+
+<main>
+
+  <div class="project-title">
+    <h2>Análisis estadístico del consumo de agua</h2>
+    <p>
+      Estudio del consumo de agua en los dispensadores del edificio
+      de aulas de UNIPAZ. Registro de información, reposición de
+      botellones y comportamiento de la demanda.
+    </p>
+  </div>
+
+  <nav class="tabs">
+    <button class="tab active" data-tab="registrar">✎ Registrar</button>
+    <button class="tab" data-tab="analisis">▥ Análisis</button>
+    <button class="tab" data-tab="probabilidad">◉ Probabilidad</button>
+    <button class="tab" data-tab="informe">▤ Informe</button>
+  </nav>
+
+  <!-- REGISTRAR -->
+
+  <section id="registrar" class="panel active">
+
+    <div class="card">
+      <h3 class="section-heading">
+        <span class="section-number">01</span>
+        Formulario de recolección de información
+      </h3>
+
+      <form id="registroForm">
+
+        <div class="form-grid">
+
+          <div class="field">
+            <label for="piso">Piso *</label>
+            <select id="piso" required>
+              <option value="">Seleccione...</option>
+              <option>Piso 1</option>
+              <option>Piso 2</option>
+              <option>Piso 3</option>
+              <option>Piso 4</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="dispensador">Identificación del dispensador *</label>
+            <input id="dispensador" list="listaDispensadores"
+                   placeholder="Ejemplo: D1" required>
+            <datalist id="listaDispensadores">
+              <option value="D1"><option value="D2">
+              <option value="D3"><option value="D4">
+              <option value="D5"><option value="D6">
+              <option value="D7"><option value="D8">
+              <option value="D9"><option value="D10">
+            </datalist>
+            <small>Puede ingresar D1, D2, D3... o agregar otro identificador.</small>
+          </div>
+
+          <div class="field">
+            <label for="fecha">Fecha de registro *</label>
+            <input type="date" id="fecha" required>
+          </div>
+
+          <div class="field">
+            <label for="horaInicio">Hora de observación inicial *</label>
+            <input type="time" id="horaInicio" required>
+          </div>
+
+          <div class="field">
+            <label for="horaFinal">Hora de observación final *</label>
+            <input type="time" id="horaFinal" required>
+          </div>
+
+          <div class="field">
+            <label for="jornada">Jornada académica *</label>
+            <select id="jornada" required>
+              <option value="">Seleccione...</option>
+              <option>Mañana</option>
+              <option>Tarde</option>
+              <option>Noche</option>
+            </select>
+          </div>
+
+        </div>
+
+        <br>
+        <h3 class="section-heading">
+          <span class="section-number">02</span>
+          Información del botellón y consumo
+        </h3>
+
+        <div class="form-grid">
+
+          <div class="field">
+            <label for="capacidad">Capacidad del botellón (litros) *</label>
+            <input type="number" id="capacidad" min="0.01"
+                   step="0.01" placeholder="Ejemplo: 20" required>
+          </div>
+
+          <div class="field">
+            <label for="nivelInicial">Nivel de agua inicial (litros) *</label>
+            <input type="number" id="nivelInicial" min="0"
+                   step="0.01" placeholder="Ejemplo: 20" required>
+          </div>
+
+          <div class="field">
+            <label for="nivelFinal">Nivel de agua final (litros) *</label>
+            <input type="number" id="nivelFinal" min="0"
+                   step="0.01" placeholder="Ejemplo: 5" required>
+          </div>
+
+          <div class="field">
+            <label for="botellones">Botellones reemplazados *</label>
+            <input type="number" id="botellones" min="0"
+                   step="1" value="0" required>
+          </div>
+
+          <div class="field">
+            <label for="remanente">Agua remanente retirada (litros) *</label>
+            <input type="number" id="remanente" min="0"
+                   step="0.01" value="0" required>
+            <small>Suma de los litros que quedaron en los botellones retirados.</small>
+          </div>
+
+          <div class="field">
+            <label for="frecuencia">Frecuencia de cambio (número de veces) *</label>
+            <input type="number" id="frecuencia" min="0"
+                   step="1" value="0" required>
+            <small>Para el mismo periodo de observación.</small>
+          </div>
+
+          <div class="field full">
+            <label for="horasCambio">Hora u horas de cambio de botellones</label>
+            <input type="text" id="horasCambio"
+                   placeholder="Ejemplo: 09:30, 11:45, 14:00">
+            <small>Si hubo varios cambios, separe las horas con comas.</small>
+          </div>
+
+        </div>
+
+        <div class="calculation" style="margin-top:20px">
+          <div>
+            <strong>Consumo estimado de agua</strong>
+            <p style="margin:5px 0 0;color:#718096;font-size:12px">
+              Cálculo automático en litros.
+            </p>
+          </div>
+          <div class="value" id="consumoPreview">0,00 L</div>
+        </div>
+
+        <div class="method-note">
+          <strong>Fórmula de cálculo:</strong><br>
+          Consumo = Nivel inicial + (Botellones reemplazados × Capacidad)
+          − Nivel final − Agua remanente retirada.<br><br>
+          Este cálculo supone que cada botellón nuevo se instala lleno
+          y que el remanente registrado corresponde al total de agua
+          retirada durante los cambios. Las cantidades deben medirse
+          o estimarse de forma consistente.
+        </div>
+
+        <br>
+        <h3 class="section-heading">
+          <span class="section-number">03</span>
+          Información complementaria
+        </h3>
+
+        <div class="form-grid">
+
+          <div class="field">
+            <label for="estado">Estado del dispensador *</label>
+            <select id="estado" required>
+              <option value="">Seleccione...</option>
+              <option>Funcionando</option>
+              <option>Fuera de servicio</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="usuarios">Número de usuarios estimados *</label>
+            <input type="number" id="usuarios" min="0"
+                   step="1" placeholder="Ejemplo: 80" required>
+          </div>
+
+          <div class="field full">
+            <label for="observaciones">Observaciones</label>
+            <textarea id="observaciones"
+              placeholder="Registre fugas, daños, desperdicio, mantenimiento u otras novedades..."></textarea>
+          </div>
+
+        </div>
+
+        <div id="mensaje" class="message"></div>
+
+        <div class="actions">
+          <button type="submit" class="btn btn-primary">
+            ✓ Guardar registro
+          </button>
+          <button type="reset" class="btn btn-light">
+            Limpiar formulario
+          </button>
+        </div>
+
+      </form>
+    </div>
+
+    <!-- RESUMEN -->
+
+    <div class="card">
+      <h3 class="section-heading">
+        <span class="section-number">04</span>
+        Resumen de la información recolectada
+      </h3>
+
+      <div class="stats-grid">
+
+        <div class="stat">
+          <div class="stat-label">Total de registros</div>
+          <div class="stat-value" id="totalRegistros">0</div>
+          <small>Observaciones guardadas</small>
+        </div>
+
+        <div class="stat">
+          <div class="stat-label">Dispensadores registrados</div>
+          <div class="stat-value" id="totalDispensadores">0</div>
+          <small>Identificadores diferentes</small>
+        </div>
+
+        <div class="stat">
+          <div class="stat-label">Pisos incluidos</div>
+          <div class="stat-value" id="totalPisos">0</div>
+          <small>Pisos con registros</small>
+        </div>
+
+        <div class="stat">
+          <div class="stat-label">Botellones reemplazados</div>
+          <div class="stat-value" id="totalBotellones">0</div>
+          <small>Total acumulado</small>
+        </div>
+
+        <div class="stat">
+          <div class="stat-label">Consumo acumulado</div>
+          <div class="stat-value" id="totalConsumo">0 L</div>
+          <small>Litros estimados</small>
+        </div>
+
+        <div class="stat">
+          <div class="stat-label">Usuarios estimados</div>
+          <div class="stat-value" id="totalUsuarios">0</div>
+          <small>Usuarios registrados</small>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- TABLA -->
+
+    <div class="card">
+      <h3 class="section-heading">
+        <span class="section-number">05</span>
+        Base de datos de registros
+      </h3>
+
+      <div class="actions" style="margin-top:0;margin-bottom:18px">
+        <button class="btn btn-green" onclick="exportarCSV()">
+          ↓ Exportar datos a Excel (CSV)
+        </button>
+        <button class="btn btn-light" onclick="actualizarTabla()">
+          ↻ Actualizar tabla
+        </button>
+      </div>
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>N.º</th>
+              <th>Fecha</th>
+              <th>Piso</th>
+              <th>Dispensador</th>
+              <th>Hora inicial</th>
+              <th>Hora final</th>
+              <th>Franja horaria</th>
+              <th>Capacidad (L)</th>
+              <th>Nivel inicial (L)</th>
+              <th>Nivel final (L)</th>
+              <th>Botellones</th>
+              <th>Remanente (L)</th>
+              <th>Consumo (L)</th>
+              <th>Frecuencia</th>
+              <th>Jornada</th>
+              <th>Estado</th>
+              <th>Usuarios</th>
+              <th>Observaciones</th>
+              <th>Acción</th>
+            </tr>
+          </thead>
+          <tbody id="tablaRegistros">
+            <tr><td colspan="19" class="empty">
+              No hay registros disponibles. Comience ingresando información.
+            </td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p style="color:#718096;font-size:12px;margin-top:15px">
+        Los registros se conservan en el almacenamiento local del navegador.
+      </p>
+    </div>
+
+  </section>
+
+  <!-- ANALISIS -->
+
+  <section id="analisis" class="panel">
+    <div class="card construction">
+      <div class="icon">📊</div>
+      <h2>Análisis estadístico</h2>
+      <p>Esta sección se encuentra en construcción.</p>
+      <p>Aquí se desarrollarán tablas de frecuencia, medidas de tendencia
+      central, dispersión y gráficos estadísticos.</p>
+    </div>
+  </section>
+
+  <!-- PROBABILIDAD -->
+
+  <section id="probabilidad" class="panel">
+    <div class="card construction">
+      <div class="icon">🎲</div>
+      <h2>Probabilidad</h2>
+      <p>Esta sección se encuentra en construcción.</p>
+      <p>Aquí se realizarán cálculos de probabilidades y análisis
+      de eventos relacionados con el consumo de agua.</p>
+    </div>
+  </section>
+
+  <!-- INFORME -->
+
+  <section id="informe" class="panel">
+    <div class="card construction">
+      <div class="icon">📑</div>
+      <h2>Informe estadístico</h2>
+      <p>Esta sección se encuentra en construcción.</p>
+      <p>Aquí se generarán los resultados, tablas, gráficos,
+      interpretaciones y conclusiones del estudio.</p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  EstadiApp – Docente · Proyecto académico de Estadística · UNIPAZ
+  <br>Herramienta de recolección de datos estadísticos.
+</footer>
+
+<script>
+
+// ==========================================
+// 1. CONFIGURACIÓN Y ALMACENAMIENTO
+// ==========================================
+
+const STORAGE_KEY = "estadiapp_unipaz_registros_v1";
+
+let registros = [];
+
+try {
+  const datos = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+  registros = Array.isArray(datos) ? datos : [];
+} catch (error) {
+  registros = [];
+}
+
+const $ = id => document.getElementById(id);
+
+function guardarLocal() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(registros));
+    return true;
+  } catch (error) {
+    mostrarMensaje("No fue posible guardar los datos. Revise el almacenamiento disponible del navegador.", "error");
+    return false;
+  }
+}
+
+function numero(valor) {
+  return Number(valor) || 0;
+}
+
+function formato(valor) {
+  return numero(valor).toLocaleString("es-CO", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
+}
+
+function escapar(valor) {
+  return String(valor ?? "").replace(/[&<>"']/g, c => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  })[c]);
+}
+
+// ==========================================
+// 2. FECHA Y HORA AUTOMÁTICAS
+// ==========================================
+
+function fechaLocal() {
+  const d = new Date();
+  const anio = d.getFullYear();
+  const mes = String(d.getMonth() + 1).padStart(2, "0");
+  const dia = String(d.getDate()).padStart(2, "0");
+  return `${anio}-${mes}-${dia}`;
+}
+
+function horaLocal() {
+  const d = new Date();
+  return String(d.getHours()).padStart(2, "0") + ":" +
+         String(d.getMinutes()).padStart(2, "0");
+}
+
+function prepararFormulario() {
+  $("fecha").value = fechaLocal();
+  $("horaInicio").value = horaLocal();
+  $("horaFinal").value = "";
+  $("capacidad").value = "";
+  $("nivelInicial").value = "";
+  $("nivelFinal").value = "";
+  $("botellones").value = 0;
+  $("remanente").value = 0;
+  $("frecuencia").value = 0;
+  $("horasCambio").value = "";
+  $("dispensador").value = "";
+  $("piso").value = "";
+  $("jornada").value = "";
+  $("estado").value = "";
+  $("usuarios").value = "";
+  $("observaciones").value = "";
+  $("consumoPreview").textContent = "0,00 L";
+}
+
+// ==========================================
+// 3. CÁLCULO DEL CONSUMO
+// ==========================================
+
+function calcularConsumo() {
+
+  const capacidad = numero($("capacidad").value);
+  const inicial = numero($("nivelInicial").value);
+  const final = numero($("nivelFinal").value);
+  const cambios = numero($("botellones").value);
+  const remanente = numero($("remanente").value);
+
+  const consumo = inicial + (cambios * capacidad) - final - remanente;
+
+  $("consumoPreview").textContent = formato(consumo) + " L";
+
+  return consumo;
+}
+
+[
+  "capacidad",
+  "nivelInicial",
+  "nivelFinal",
+  "botellones",
+  "remanente"
+].forEach(id => {
+  $(id).addEventListener("input", calcularConsumo);
+});
+
+// ==========================================
+// 4. MENSAJES
+// ==========================================
+
+function mostrarMensaje(texto, tipo) {
+  const mensaje = $("mensaje");
+  mensaje.textContent = texto;
+  mensaje.className = "message " + tipo;
+  mensaje.scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+
+// ==========================================
+// 5. FRANJA HORARIA
+// ==========================================
+
+function calcularFranja(hora) {
+  if (!hora) return "";
+
+  const h = Number(hora.split(":")[0]);
+
+  return String(h).padStart(2, "0") +
+    ":00–" +
+    String(h).padStart(2, "0") +
+    ":59";
+}
+
+// ==========================================
+// 6. VALIDACIÓN Y REGISTRO
+// ==========================================
+
+$("registroForm").addEventListener("submit", function(e) {
+
+  e.preventDefault();
+
+  const capacidad = numero($("capacidad").value);
+  const inicial = numero($("nivelInicial").value);
+  const final = numero($("nivelFinal").value);
+  const cambios = numero($("botellones").value);
+  const remanente = numero($("remanente").value);
+  const frecuencia = numero($("frecuencia").value);
+  const usuarios = numero($("usuarios").value);
+
+  const consumo = calcularConsumo();
+
+  if (!$("registroForm").checkValidity()) {
+    $("registroForm").reportValidity();
+    return;
+  }
+
+  if (capacidad <= 0) {
+    mostrarMensaje("La capacidad del botellón debe ser mayor que cero.", "error");
+    return;
+  }
+
+  if (inicial > capacidad || final > capacidad) {
+    mostrarMensaje("Los niveles de agua no pueden superar la capacidad del botellón.", "error");
+    return;
+  }
+
+  if (remanente > cambios * capacidad) {
+    mostrarMensaje("El agua remanente no puede superar la capacidad total de los botellones reemplazados.", "error");
+    return;
+  }
+
+  if (consumo < -0.001) {
+    mostrarMensaje("El cálculo arroja un consumo negativo. Verifique los niveles, los cambios y el remanente.", "error");
+    return;
+  }
+
+  if (frecuencia !== cambios) {
+    mostrarMensaje("La frecuencia de cambio debe coincidir con el número de botellones reemplazados durante el mismo periodo.", "error");
+    return;
+  }
+
+  if (cambios > 0 && !$("horasCambio").value.trim()) {
+    mostrarMensaje("Registre la hora u horas en que se cambiaron los botellones.", "error");
+    return;
+  }
+
+  const horaInicial = $("horaInicio").value;
+  const horaFinal = $("horaFinal").value;
+
+  const horas = horaFinal.split(":").map(Number);
+  const inicio = horaInicial.split(":").map(Number);
+
+  const minutosFinal = horas[0] * 60 + horas[1];
+  const minutosInicio = inicio[0] * 60 + inicio[1];
+
+  if (minutosFinal <= minutosInicio) {
+    mostrarMensaje("La hora final debe ser posterior a la hora inicial. Para observaciones que cruzan la medianoche, divida el registro en dos periodos.", "error");
+    return;
+  }
+
+  const id = registros.length
+    ? Math.max(...registros.map(r => r.id)) + 1
+    : 1;
+
+  const registro = {
+    id,
+    piso: $("piso").value,
+    dispensador: $("dispensador").value.trim().toUpperCase(),
+    fecha: $("fecha").value,
+    horaInicio,
+    horaFinal,
+    franja: calcularFranja(horaInicial),
+    capacidad,
+    inicial,
+    final,
+    botellones: cambios,
+    remanente,
+    consumo: Math.max(0, consumo),
+    frecuencia,
+    horasCambio: $("horasCambio").value.trim(),
+    estado: $("estado").value,
+    jornada: $("jornada").value,
+    usuarios,
+    observaciones: $("observaciones").value.trim()
+  };
+
+  registros.push(registro);
+
+  if (!guardarLocal()) {
+    registros.pop();
+    return;
+  }
+
+  actualizarTabla();
+  prepararFormulario();
+
+  mostrarMensaje(
+    "¡Registro número " + id + " guardado correctamente!",
+    "success"
+  );
+
+});
+
+// ==========================================
+// 7. ACTUALIZACIÓN DE TABLA E INDICADORES
+// ==========================================
+
+function actualizarTabla() {
+
+  const tbody = $("tablaRegistros");
+
+  if (registros.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="19" class="empty">
+          No hay registros disponibles.
+        </td>
+      </tr>`;
+  } else {
+
+    tbody.innerHTML = [...registros]
+      .sort((a,b) => b.id - a.id)
+      .map(r => `
+        <tr>
+          <td><strong>${r.id}</strong></td>
+          <td>${escapar(r.fecha)}</td>
+          <td>${escapar(r.piso)}</td>
+          <td>${escapar(r.dispensador)}</td>
+          <td>${escapar(r.horaInicio)}</td>
+          <td>${escapar(r.horaFinal)}</td>
+          <td>${escapar(r.franja)}</td>
+          <td>${formato(r.capacidad)}</td>
+          <td>${formato(r.inicial)}</td>
+          <td>${formato(r.final)}</td>
+          <td>${r.botellones}</td>
+          <td>${formato(r.remanente)}</td>
+          <td><strong>${formato(r.consumo)}</strong></td>
+          <td>${r.frecuencia}</td>
+          <td>${escapar(r.jornada)}</td>
+          <td>
+            <span class="badge-status ${r.estado === "Funcionando" ? "operativo" : "inactivo"}">
+              ${escapar(r.estado)}
+            </span>
+          </td>
+          <td>${r.usuarios}</td>
+          <td>${escapar(r.observaciones)}</td>
+          <td>
+            <button class="btn btn-danger"
+              onclick="eliminarRegistro(${r.id})">
+              Eliminar
+            </button>
+          </td>
+        </tr>
+      `).join("");
+  }
+
+  actualizarIndicadores();
+}
+
+// ==========================================
+// 8. INDICADORES GENERALES
+// ==========================================
+
+function actualizarIndicadores() {
+
+  const dispensadores = new Set(registros.map(r =>
+    r.piso + "|" + r.dispensador
+  ));
+
+  const pisos = new Set(registros.map(r => r.piso));
+
+  const botellones = registros.reduce(
+    (s,r) => s + r.botellones, 0
+  );
+
+  const consumo = registros.reduce(
+    (s,r) => s + r.consumo, 0
+  );
+
+  const usuarios = registros.reduce(
+    (s,r) => s + r.usuarios, 0
+  );
+
+  $("totalRegistros").textContent = registros.length;
+  $("totalDispensadores").textContent = dispensadores.size;
+  $("totalPisos").textContent = pisos.size;
+  $("totalBotellones").textContent = botellones;
+  $("totalConsumo").textContent = formato(consumo) + " L";
+  $("totalUsuarios").textContent = usuarios.toLocaleString("es-CO");
+}
+
+// ==========================================
+// 9. ELIMINAR REGISTROS
+// ==========================================
+
+function eliminarRegistro(id) {
+
+  const confirmar = confirm(
+    "¿Está seguro de eliminar el registro número " + id + "?\n\nEsta acción no se puede deshacer."
+  );
+
+  if (!confirmar) return;
+
+  const anteriores = registros;
+  registros = registros.filter(r => r.id !== id);
+
+  if (!guardarLocal()) {
+    registros = anteriores;
+    return;
+  }
+
+  actualizarTabla();
+  mostrarMensaje("Registro eliminado correctamente.", "success");
+}
+
+// ==========================================
+// 10. EXPORTACIÓN A EXCEL / CSV
+// ==========================================
+
+function exportarCSV() {
+
+  if (!registros.length) {
+    alert("No existen registros para exportar.");
+    return;
+  }
+
+  const encabezados = [
+    "Numero",
+    "Fecha",
+    "Piso",
+    "Dispensador",
+    "Hora inicial",
+    "Hora final",
+    "Franja horaria",
+    "Capacidad litros",
+    "Nivel inicial litros",
+    "Nivel final litros",
+    "Botellones reemplazados",
+    "Remanente litros",
+    "Consumo litros",
+    "Frecuencia de cambio",
+    "Horas de cambio",
+    "Estado",
+    "Jornada",
+    "Usuarios",
+    "Observaciones"
+  ];
+
+  const filas = registros.map(r => [
+    r.id, r.fecha, r.piso, r.dispensador,
+    r.horaInicio, r.horaFinal, r.franja,
+    r.capacidad, r.inicial, r.final,
+    r.botellones, r.remanente, r.consumo,
+    r.frecuencia, r.horasCambio, r.estado,
+    r.jornada, r.usuarios, r.observaciones
+  ]);
+
+  function csvEscape(valor) {
+    return '"' + String(valor ?? "").replace(/"/g, '""') + '"';
+  }
+
+  const contenido = [
+    encabezados.map(csvEscape).join(";"),
+    ...filas.map(f => f.map(csvEscape).join(";"))
+  ].join("\r\n");
+
+  const blob = new Blob(
+    ["\uFEFF" + contenido],
+    { type: "text/csv;charset=utf-8;" }
+  );
+
+  const url = URL.createObjectURL(blob);
+  const enlace = document.createElement("a");
+
+  enlace.href = url;
+  enlace.download = "EstadiApp_Consumo_Agua_UNIPAZ.csv";
+
+  document.body.appendChild(enlace);
+  enlace.click();
+  enlace.remove();
+
+  URL.revokeObjectURL(url);
+}
+
+// ==========================================
+// 11. NAVEGACIÓN ENTRE PESTAÑAS
+// ==========================================
+
+document.querySelectorAll(".tab").forEach(tab => {
+
+  tab.addEventListener("click", () => {
+
+    document.querySelectorAll(".tab").forEach(t =>
+      t.classList.remove("active")
+    );
+
+    document.querySelectorAll(".panel").forEach(p =>
+      p.classList.remove("active")
+    );
+
+    tab.classList.add("active");
+    $(tab.dataset.tab).classList.add("active");
+
+  });
+
+});
+
+// ==========================================
+// 12. LIMPIEZA DEL FORMULARIO
+// ==========================================
+
+$("registroForm").addEventListener("reset", () => {
+
+  setTimeout(() => {
+    prepararFormulario();
+    $("mensaje").className = "message";
+    $("consumoPreview").textContent = "0,00 L";
+  }, 0);
+
+});
+
+// ==========================================
+// 13. INICIALIZACIÓN
+// ==========================================
+
+actualizarTabla();
+prepararFormulario();
+
+</script>
+
+</body>
+</html>
